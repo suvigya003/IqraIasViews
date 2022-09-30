@@ -1,6 +1,7 @@
 import { filter } from 'lodash';
+import axios from 'axios';
 import { sentenceCase } from 'change-case';
-import React,{ useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 // material
 import {
@@ -23,7 +24,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-
 } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import Modal from '@mui/material/Modal';
@@ -60,7 +60,7 @@ const style = {
   // border: '2px solid #000',
   // boxShadow: 10,
   p: 4,
-  borderRadius:'8px',
+  borderRadius: '8px',
 };
 // ----------------------------------------------------------------------
 
@@ -94,6 +94,19 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function User() {
+  const [students, setStudents] = useState([]);
+
+  useEffect(() => {
+    const getCustomerInfoData = async () => {
+      const { data } = await axios.get('http://localhost:8000/student/getStudents');
+      setStudents(data.data);
+      console.log(data.data);
+    };
+    getCustomerInfoData();
+  }, []);
+
+  console.log(students);
+
   const [page, setPage] = useState(0);
 
   const [order, setOrder] = useState('asc');
@@ -161,7 +174,6 @@ export default function User() {
   const handleOpen1 = () => setOpen1(true);
   const handleClose1 = () => setOpen1(false);
 
-
   return (
     <Page title="User">
       <Container>
@@ -190,8 +202,8 @@ export default function User() {
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                  {students.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                    const { id, name, batch, createdAt } = row;
                     const isItemSelected = selected.indexOf(name) !== -1;
 
                     return (
@@ -214,107 +226,107 @@ export default function User() {
                             </Typography>
                           </Stack>
                         </TableCell> */}
-                        <TableCell align="left">{company}</TableCell>
-                        <TableCell align="left">{role}</TableCell>
-                        <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
+                        <TableCell align="left">{id}</TableCell>
+                        <TableCell align="left">{name}</TableCell>
+                        <TableCell align="left">{createdAt}</TableCell>
                         <TableCell align="left">
-                        <Button variant="contained" onClick={handleOpen}>
-                          Evaluate
-                        </Button>
-                        <Modal
-                          open={open}
-                          onClose={handleClose}
-                          aria-labelledby="modal-modal-title"
-                          aria-describedby="modal-modal-description"
-                        >
-                          <Box sx={style}>
-<Grid container spacing={3}>
-  <Grid item xs={12}>
-    <Typography variant="h6">Copy:</Typography>
-  </Grid>
-  <Grid item xs={12}md={4}>
-  <Typography variant="h6">Upload Evaluated Copy:</Typography>
-  </Grid>
-  <Grid item xs={12} md={8}>
-  <Button
-                variant="outlined"
-                component="label"
-                sx={{ width: '100%', ml: { md: 1 }, mt: { xs: 2, md: 0 }, height: '50px' }}
-              >
-                Upload Copy
-                <input hidden accept="image/*" type="file" />
-              </Button>
-  </Grid>
-  <Grid item xs={12}>
-  <TextField
-                label="Comment"
-                variant="outlined"
-                fullWidth
-                sx={{ mr: { md: 1 } }}
-                type="text"
-                name="comment"
-                // value={sList.oldPassword}
-                // onChange={handleChange}
-              />
-  </Grid>
-
-</Grid>
-<Box mt={3}>
-<Button variant="contained" 
-// onClick={handleOpen3}
->
-                          Submit
-                        </Button>
-</Box>
-
-                          </Box>
-                        </Modal>
+                          <Button variant="contained" onClick={handleOpen}>
+                            Evaluate
+                          </Button>
+                          <Modal
+                            open={open}
+                            onClose={handleClose}
+                            aria-labelledby="modal-modal-title"
+                            aria-describedby="modal-modal-description"
+                          >
+                            <Box sx={style}>
+                              <Grid container spacing={3}>
+                                <Grid item xs={12}>
+                                  <Typography variant="h6">Copy:</Typography>
+                                </Grid>
+                                <Grid item xs={12} md={4}>
+                                  <Typography variant="h6">Upload Evaluated Copy:</Typography>
+                                </Grid>
+                                <Grid item xs={12} md={8}>
+                                  <Button
+                                    variant="outlined"
+                                    component="label"
+                                    sx={{ width: '100%', ml: { md: 1 }, mt: { xs: 2, md: 0 }, height: '50px' }}
+                                  >
+                                    Upload Copy
+                                    <input hidden accept="image/*" type="file" />
+                                  </Button>
+                                </Grid>
+                                <Grid item xs={12}>
+                                  <TextField
+                                    label="Comment"
+                                    variant="outlined"
+                                    fullWidth
+                                    sx={{ mr: { md: 1 } }}
+                                    type="text"
+                                    name="comment"
+                                    // value={sList.oldPassword}
+                                    // onChange={handleChange}
+                                  />
+                                </Grid>
+                              </Grid>
+                              <Box mt={3}>
+                                <Button
+                                  variant="contained"
+                                  // onClick={handleOpen3}
+                                >
+                                  Submit
+                                </Button>
+                              </Box>
+                            </Box>
+                          </Modal>
                         </TableCell>
                         <TableCell align="left">
-                        <Button variant="contained" onClick={handleOpen1}>
-                          Assign
-                        </Button>
-                        <Modal
-                          open={open1}
-                          onClose={handleClose1}
-                          aria-labelledby="modal-modal-title"
-                          aria-describedby="modal-modal-description"
-                        >
-                          <Box sx={style}>
-<Grid container spacing={3}>
-  <Grid item xs={12}>
-  <FormControl fullWidth sx={{ mr: { md: 1 } }}>
-              <InputLabel id="demo-simple-select-label">Assign To</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                // value={sList.serviceType}
-                label="Assign To"
-                // onChange={handleServiceChange}
-              >
-                <MenuItem value={'Site Survey'}>
-                <ListItem>
-            <Checkbox label="Lettuce" defaultChecked />
-          </ListItem>
-                </MenuItem>
-                <MenuItem value={'Kitchen Installation'}>
-                <Checkbox label="Lettuce" defaultChecked />
-                </MenuItem>
-                <MenuItem value={'Wardrobe Installation'}>Wardrobe Installation</MenuItem>
-                <MenuItem value={'Product Service'}>Product Service</MenuItem>
-              </Select>
-            </FormControl> 
-  </Grid>
-  <Grid item xs={12}>
-  <Button variant="contained" 
-  // onClick={handleOpen2}
-  >
-                          Assign
-                        </Button>
-  </Grid>
-</Grid>
-                          </Box>
-                        </Modal>
+                          <Button variant="contained" onClick={handleOpen1}>
+                            Assign
+                          </Button>
+                          <Modal
+                            open={open1}
+                            onClose={handleClose1}
+                            aria-labelledby="modal-modal-title"
+                            aria-describedby="modal-modal-description"
+                          >
+                            <Box sx={style}>
+                              <Grid container spacing={3}>
+                                <Grid item xs={12}>
+                                  <FormControl fullWidth sx={{ mr: { md: 1 } }}>
+                                    <InputLabel id="demo-simple-select-label">Assign To</InputLabel>
+                                    <Select
+                                      labelId="demo-simple-select-label"
+                                      id="demo-simple-select"
+                                      // value={sList.serviceType}
+                                      label="Assign To"
+                                      // onChange={handleServiceChange}
+                                    >
+                                      <MenuItem value={'Site Survey'}>
+                                        <ListItem>
+                                          <Checkbox label="Lettuce" defaultChecked />
+                                        </ListItem>
+                                      </MenuItem>
+                                      <MenuItem value={'Kitchen Installation'}>
+                                        <Checkbox label="Lettuce" defaultChecked />
+                                      </MenuItem>
+                                      <MenuItem value={'Wardrobe Installation'}>Wardrobe Installation</MenuItem>
+                                      <MenuItem value={'Product Service'}>Product Service</MenuItem>
+                                    </Select>
+                                  </FormControl>
+                                </Grid>
+                                <Grid item xs={12}>
+                                  <Button
+                                    variant="contained"
+                                    // onClick={handleOpen2}
+                                  >
+                                    Assign
+                                  </Button>
+                                </Grid>
+                              </Grid>
+                            </Box>
+                          </Modal>
                         </TableCell>
                         {/* <TableCell align="left">
                           <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>

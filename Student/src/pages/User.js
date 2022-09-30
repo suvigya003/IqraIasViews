@@ -1,6 +1,6 @@
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import React,{ useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import axios from 'axios';
 // material
@@ -56,7 +56,7 @@ const style = {
   // border: '2px solid #000',
   // boxShadow: 10,
   p: 4,
-  borderRadius:'8px',
+  borderRadius: '8px',
 };
 
 // ----------------------------------------------------------------------
@@ -91,18 +91,30 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function User() {
-const [teacher, setTeacher] = useState([])
+  const [teacher, setTeacher] = useState([]);
+  // const [selectedTeacher, setSelectedTeacher] = useState('');
+  const [answerFile, setAnswerFile] = useState();
+  const [answerEvaluation, setAnswerEvaluation] = useState({
+    teacher: '',
+  });
+
+  const handleAnswerFile = (e) => {
+    setAnswerFile(e.target.value);
+    console.log(answerFile);
+  };
+
+  // const handleSelectedTeacher = (e) => {};
 
   useEffect(() => {
     const getCustomerInfoData = async () => {
-      const { data} = await axios.get('http://localhost:8000/teacher/getTeachers');
-      setTeacher(data);
-      console.log(teacher);
+      const { data } = await axios.get('http://localhost:8000/teacher/getTeachers');
+      setTeacher(data.data);
+      console.log(data.data);
     };
     getCustomerInfoData();
   }, []);
 
-
+  console.log(teacher);
 
   const [page, setPage] = useState(0);
 
@@ -170,11 +182,8 @@ const [teacher, setTeacher] = useState([])
   const [open1, setOpen1] = React.useState(false);
   const handleOpen1 = () => setOpen1(true);
   const handleClose1 = () => setOpen1(false);
-// ----------------------------------------------------------------------------------------------
-  const [answerEvaluation, setAnswerEvaluation] = useState( {
-    teacher:'',
-} );
-const handleCustomerCordinatorChange = (event) => {
+  // ----------------------------------------------------------------------------------------------
+  const handleSelectedTeacher = (event) => {
     setAnswerEvaluation({
       ...answerEvaluation,
       teacher: event.target.value,
@@ -192,9 +201,14 @@ const handleCustomerCordinatorChange = (event) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const formData = new FormData();
+      formData.append('answerFile', answerFile);
+
       console.log(customerInfo);
       await axios
-        .post('', answerEvaluation)
+        .post(`http://localhost:8000/student/addAnswerEvaluation/${answerEvaluation.teacher}`, formData, {
+          'content-type': 'multipart/form-data',
+        })
         .then((res) => {
           console.log(res);
         })
@@ -202,7 +216,7 @@ const handleCustomerCordinatorChange = (event) => {
           console.log(err);
         });
       setAnswerEvaluation({
-        teacher:'',
+        teacher: '',
       });
       alert('Information submitted successfully');
     } catch (error) {
@@ -211,105 +225,115 @@ const handleCustomerCordinatorChange = (event) => {
   };
   const [customerInfo, setCustomerInfo] = useState([
     {
-      id:'1',
-      date:'12/08/2022',
+      id: '1',
+      date: '12/08/2022',
     },
     {
-      id:'2',
-      date:'15/08/2022',
+      id: '2',
+      date: '15/08/2022',
     },
     {
-      id:'3',
-      date:'27/08/2022',
+      id: '3',
+      date: '27/08/2022',
     },
     {
-      id:'4',
-      date:'31/08/2022',
+      id: '4',
+      date: '31/08/2022',
     },
     {
-      id:'5',
-      date:'12/09/2022',
+      id: '5',
+      date: '12/09/2022',
     },
   ]);
-  
 
   return (
     <Page title="User">
       <Container>
-      <form onSubmit={handleSubmit}>
-      <Card>
+        <form onSubmit={handleSubmit}>
+          <Card>
             <Box p={3}>
-                <Grid container spacing={3}>
+              <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                    <FormControl fullWidth sx={{ mr: { md: 1 } }}>
-                <InputLabel id="demo-simple-select-label">Select Teacher</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  value={answerEvaluation.teacher}
-                  label="Select Teacher"
-                  onChange={handleCustomerCordinatorChange}
-                >
-                  <MenuItem value={'Site Survey'}>Site Survey</MenuItem>
-                  <MenuItem value={'Kitchen Installation'}>Kitchen Installation</MenuItem>
-                  <MenuItem value={'Wardrobe Installation'}>Wardrobe Installation</MenuItem>
-                  <MenuItem value={'Product Service'}>Product Service</MenuItem>
-                </Select>
-              </FormControl>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                    <Button
-                variant="outlined"
-                component="label"
-                sx={{ width: '100%', ml: { md: 1 }, mt: { xs: 2, md: 0 }, height: '50px' }}
-              >
-                Upload File
-                <input hidden accept="image/*" type="file" />
-              </Button>
-                    </Grid>
-                    
+                  <FormControl fullWidth sx={{ mr: { md: 1 } }}>
+                    <InputLabel id="demo-simple-select-label">Select Teacher</InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      value={answerEvaluation.teacher}
+                      label="Select Teacher"
+                      onChange={handleSelectedTeacher}
+                    >
+                      {/* <MenuItem value={'Site Survey'}>Site Survey</MenuItem>
+                      <MenuItem value={'Kitchen Installation'}>Kitchen Installation</MenuItem>
+                      <MenuItem value={'Wardrobe Installation'}>Wardrobe Installation</MenuItem>
+                      <MenuItem value={'Product Service'}>Product Service</MenuItem> */}
+                      {teacher
+                        ? teacher.map((t, idx) => {
+                            return <MenuItem value={t.id}>{t.name}</MenuItem>;
+                          })
+                        : null}
+                    </Select>
+                  </FormControl>
                 </Grid>
-                <Box mt={3}>
+                <Grid item xs={12} md={6}>
+                  <Button
+                    className="file-input"
+                    value={answerFile}
+                    onChange={handleAnswerFile}
+                    variant="outlined"
+                    component="label"
+                    sx={{ width: '100%', ml: { md: 1 }, mt: { xs: 2, md: 0 }, height: '50px' }}
+                  >
+                    Upload File
+                    <input
+                      hidden
+                      // accept="image/*"
+                      type="file"
+                    />
+                  </Button>
+                </Grid>
+              </Grid>
+              <Box mt={3}>
                 <Button variant="contained">Send</Button>
-                </Box>   
+              </Box>
             </Box>
-        </Card>
-      </form>
-      
-<Box mt={3}>
-<Card>
-          <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
+          </Card>
+        </form>
 
-          <Scrollbar>
-            <TableContainer sx={{ minWidth: 800 }}>
-              <Table>
-                <UserListHead
-                  order={order}
-                  orderBy={orderBy}
-                  headLabel={TABLE_HEAD}
-                  rowCount={USERLIST.length}
-                  numSelected={selected.length}
-                  onRequestSort={handleRequestSort}
-                  onSelectAllClick={handleSelectAllClick}
-                />
-                <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
-                    const isItemSelected = selected.indexOf(name) !== -1;
+        <Box mt={3}>
+          <Card>
+            <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
 
-                    return (
-                      <TableRow
-                        hover
-                        key={id}
-                        tabIndex={-1}
-                        role="checkbox"
-                        selected={isItemSelected}
-                        aria-checked={isItemSelected}
-                      >
-                        <TableCell padding="checkbox">
-                          <Checkbox checked={isItemSelected} onChange={(event) => handleClick(event, name)} />
-                        </TableCell>
-                        {/* <TableCell component="th" scope="row" padding="none">
+            <Scrollbar>
+              <TableContainer sx={{ minWidth: 800 }}>
+                <Table>
+                  <UserListHead
+                    order={order}
+                    orderBy={orderBy}
+                    headLabel={TABLE_HEAD}
+                    rowCount={USERLIST.length}
+                    numSelected={selected.length}
+                    onRequestSort={handleRequestSort}
+                    onSelectAllClick={handleSelectAllClick}
+                  />
+                  <TableBody>
+                    {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                      const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                      const isItemSelected = selected.indexOf(name) !== -1;
+
+                      return (
+                        <TableRow
+                          hover
+                          key={id}
+                          tabIndex={-1}
+                          role="checkbox"
+                          selected={isItemSelected}
+                          aria-checked={isItemSelected}
+                        >
+                          <TableCell padding="checkbox">
+                            <Checkbox checked={isItemSelected} onChange={(event) => handleClick(event, name)} />
+                          </TableCell>
+                          {/* <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
                             <Avatar alt={name} src={avatarUrl} />
                             <Typography variant="subtitle2" noWrap>
@@ -317,93 +341,93 @@ const handleCustomerCordinatorChange = (event) => {
                             </Typography>
                           </Stack>
                         </TableCell> */}
-                        <TableCell align="left">{company}</TableCell>
-                        <TableCell align="left">{role}</TableCell>
-                        {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell> */}
-                        {/* <TableCell align="left">
+                          <TableCell align="left">{company}</TableCell>
+                          <TableCell align="left">{role}</TableCell>
+                          {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell> */}
+                          {/* <TableCell align="left">
                           <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>
                             {sentenceCase(status)}
                           </Label>
                         </TableCell> */}
-<TableCell align="left">
-                        <Button variant="contained" onClick={handleOpen1}>
-                          View
-                        </Button>
-                        <Modal
-                          open={open1}
-                          onClose={handleClose1}
-                          aria-labelledby="modal-modal-title"
-                          aria-describedby="modal-modal-description"
-                        >
-                          <Box sx={style}>
-<Grid container spacing={3}>
-  <Grid item xs={12}>
-    <Typography variant="h6">Uploaded Copy:</Typography>
-  </Grid> 
-</Grid>
-                          </Box>
-                        </Modal>
-                        </TableCell>
-                        <TableCell align="left">
-                        <Button variant="contained" onClick={handleOpen}>
-                          View
-                        </Button>
-                        <Modal
-                          open={open}
-                          onClose={handleClose}
-                          aria-labelledby="modal-modal-title"
-                          aria-describedby="modal-modal-description"
-                        >
-                          <Box sx={style}>
-<Grid container spacing={3}>
-  <Grid item xs={12}>
-    <Typography variant="h6">Evaluated Copy:</Typography>
-  </Grid>
-  <Grid item xs={12}>
-  <Typography variant="h6">Comment:</Typography>
-  <Typography variant="body1">
-  Improper waste management in India has numerous implications on the environment and health.
-  </Typography>
-  </Grid>
-</Grid>
-                          </Box>
-                        </Modal>
+                          <TableCell align="left">
+                            <Button variant="contained" onClick={handleOpen1}>
+                              View
+                            </Button>
+                            <Modal
+                              open={open1}
+                              onClose={handleClose1}
+                              aria-labelledby="modal-modal-title"
+                              aria-describedby="modal-modal-description"
+                            >
+                              <Box sx={style}>
+                                <Grid container spacing={3}>
+                                  <Grid item xs={12}>
+                                    <Typography variant="h6">Uploaded Copy:</Typography>
+                                  </Grid>
+                                </Grid>
+                              </Box>
+                            </Modal>
+                          </TableCell>
+                          <TableCell align="left">
+                            <Button variant="contained" onClick={handleOpen}>
+                              View
+                            </Button>
+                            <Modal
+                              open={open}
+                              onClose={handleClose}
+                              aria-labelledby="modal-modal-title"
+                              aria-describedby="modal-modal-description"
+                            >
+                              <Box sx={style}>
+                                <Grid container spacing={3}>
+                                  <Grid item xs={12}>
+                                    <Typography variant="h6">Evaluated Copy:</Typography>
+                                  </Grid>
+                                  <Grid item xs={12}>
+                                    <Typography variant="h6">Comment:</Typography>
+                                    <Typography variant="body1">
+                                      Improper waste management in India has numerous implications on the environment
+                                      and health.
+                                    </Typography>
+                                  </Grid>
+                                </Grid>
+                              </Box>
+                            </Modal>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    {emptyRows > 0 && (
+                      <TableRow style={{ height: 53 * emptyRows }}>
+                        <TableCell colSpan={6} />
+                      </TableRow>
+                    )}
+                  </TableBody>
+
+                  {isUserNotFound && (
+                    <TableBody>
+                      <TableRow>
+                        <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                          <SearchNotFound searchQuery={filterName} />
                         </TableCell>
                       </TableRow>
-                    );
-                  })}
-                  {emptyRows > 0 && (
-                    <TableRow style={{ height: 53 * emptyRows }}>
-                      <TableCell colSpan={6} />
-                    </TableRow>
+                    </TableBody>
                   )}
-                </TableBody>
+                </Table>
+              </TableContainer>
+            </Scrollbar>
 
-                {isUserNotFound && (
-                  <TableBody>
-                    <TableRow>
-                      <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                        <SearchNotFound searchQuery={filterName} />
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                )}
-              </Table>
-            </TableContainer>
-          </Scrollbar>
-
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={USERLIST.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        </Card>
-</Box>
-        
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={USERLIST.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </Card>
+        </Box>
       </Container>
     </Page>
   );
