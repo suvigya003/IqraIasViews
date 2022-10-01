@@ -131,7 +131,23 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function User() {
+  const [comment, setComment] = useState();
+  const [resultFile, setResultFile] = useState();
   const [answerEvaluations, setAnswerEvaluations] = useState([]);
+  const [evaluate, setEvaluate] = useState({
+    comment: '',
+  });
+  const [answerFile, setAnswerFile] = useState();
+
+  const handleResultFile = (e) => {
+    setResultFile(e.target.files[0], '$$$$');
+    console.log(resultFile);
+  };
+
+  const handleComment = (e) => {
+    setComment(e.target.value);
+    console.log(comment);
+  };
 
   useEffect(() => {
     const getCustomerInfoData = async () => {
@@ -139,6 +155,7 @@ export default function User() {
 
       setAnswerEvaluations(data.data);
     };
+
     getCustomerInfoData();
   }, []);
 
@@ -152,10 +169,9 @@ export default function User() {
     } = event;
     setPersonName(
       // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value,
+      typeof value === 'string' ? value.split(',') : value
     );
   };
-
 
   const [page, setPage] = useState(0);
 
@@ -218,11 +234,48 @@ export default function User() {
 
   const isUserNotFound = filteredUsers.length === 0;
   const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
+  const handleOpen = () => {
+    setOpen(true);
+  };
   const handleClose = () => setOpen(false);
   const [open1, setOpen1] = React.useState(false);
   const handleOpen1 = () => setOpen1(true);
   const handleClose1 = () => setOpen1(false);
+
+  function handleAnswerFile(answerFile) {
+    setAnswerFile(answerFile);
+  }
+
+  console.log(answerFile);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log('hey');
+    try {
+      const formData = new FormData();
+      formData.append('resultFile', resultFile);
+      formData.append('comment', comment);
+      formData.append('studentId', 2);
+      formData.append('answerFile', answerFile);
+
+      console.log(formData);
+      await axios
+        .post(`http://localhost:8000/teacher/addResult/2`, formData)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      setEvaluate({
+        comment: '',
+      });
+
+      alert('Information submitted successfully');
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <Page title="User">
@@ -253,7 +306,7 @@ export default function User() {
                 />
                 <TableBody>
                   {answerEvaluations.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, studentName, createdAt } = row;
+                    const { id, name, studentId, studentName, answerFile, createdAt } = row;
                     const isItemSelected = selected.indexOf(name) !== -1;
 
                     return (
@@ -277,8 +330,8 @@ export default function User() {
                           </Stack>
                         </TableCell> */}
                         <TableCell align="left">{id}</TableCell>
-                        <TableCell align="left">{studentName}</TableCell>
-                        <TableCell align="left">{createdAt}</TableCell>
+                        <TableCell align="left">{answerFile}</TableCell>
+                        <TableCell align="left">{createdAt.slice(0, 10)}</TableCell>
                         <TableCell align="left">
                           <Button variant="contained" onClick={handleOpen}>
                             Evaluate
@@ -289,50 +342,62 @@ export default function User() {
                             aria-labelledby="modal-modal-title"
                             aria-describedby="modal-modal-description"
                           >
-                            <Box sx={style}>
-                              <Grid container spacing={3}>
-                                <Grid item xs={12}>
-                                <Button
-                                    variant="outlined"
-                                    component="label"
-                                    sx={{ width: '100%', ml: { md: 1 }, mt: { xs: 2, md: 0 }, height: '50px' }}
-                                  >
-                                    Download Copy 
-                                    <input hidden accept="image/*" type="file" />
-                                  </Button>
+                            <form onSubmit={handleSubmit}>
+                              <Box sx={style}>
+                                <Grid container spacing={3}>
+                                  <Grid item xs={6}>
+                                    <Button
+                                      variant="outlined"
+                                      component="label"
+                                      sx={{ width: '100%', ml: { md: 1 }, mt: { xs: 2, md: 0 }, height: '50px' }}
+                                      // onClick={() => handleAnswerFile(answerFile)}
+                                    >
+                                      Download Copy: {answerFile}
+                                      <input hidden accept="image/*" type="file" />
+                                    </Button>
+                                  </Grid>
+                                  <Grid item xs={6}>
+                                    <Button
+                                      variant="outlined"
+                                      value={resultFile}
+                                      onChange={(e) => handleResultFile(e)}
+                                      component="label"
+                                      sx={{ width: '100%', ml: { md: 1 }, mt: { xs: 2, md: 0 }, height: '50px' }}
+                                    >
+                                      Upload Copy
+                                      <input
+                                        hidden
+                                        // accept="image/*"
+                                        type="file"
+                                      />
+                                    </Button>
+                                  </Grid>
+                                  <Grid item xs={12}>
+                                    <TextField
+                                      label="Comment"
+                                      value={comment}
+                                      onChange={(e) => handleComment(e)}
+                                      variant="outlined"
+                                      fullWidth
+                                      sx={{ mr: { md: 1 } }}
+                                      type="text"
+                                      name="comment"
+                                      // value={sList.oldPassword}
+                                      // onChange={handleChange}
+                                    />
+                                  </Grid>
                                 </Grid>
-                                <Grid item xs={6}>
+                                <Box mt={3}>
                                   <Button
-                                    variant="outlined"
-                                    component="label"
-                                    sx={{ width: '100%', ml: { md: 1 }, mt: { xs: 2, md: 0 }, height: '50px' }}
+                                    type="submit"
+                                    variant="contained"
+                                    // onClick={handleOpen3}
                                   >
-                                    Upload Copy
-                                    <input hidden accept="image/*" type="file" />
+                                    Submit
                                   </Button>
-                                </Grid>
-                                <Grid item xs={12}>
-                                  <TextField
-                                    label="Comment"
-                                    variant="outlined"
-                                    fullWidth
-                                    sx={{ mr: { md: 1 } }}
-                                    type="text"
-                                    name="comment"
-                                    // value={sList.oldPassword}
-                                    // onChange={handleChange}
-                                  />
-                                </Grid>
-                              </Grid>
-                              <Box mt={3}>
-                                <Button
-                                  variant="contained"
-                                  // onClick={handleOpen3}
-                                >
-                                  Submit
-                                </Button>
+                                </Box>
                               </Box>
-                            </Box>
+                            </form>
                           </Modal>
                         </TableCell>
                         <TableCell align="left">
@@ -348,26 +413,26 @@ export default function User() {
                             <Box sx={style1}>
                               <Grid container spacing={3}>
                                 <Grid item xs={12}>
-                                <FormControl fullWidth>
-        <InputLabel id="demo-multiple-checkbox-label">Assign To</InputLabel>
-        <Select
-          labelId="demo-multiple-checkbox-label"
-          id="demo-multiple-checkbox"
-          multiple
-          value={personName}
-          onChange={handleChange}
-          input={<OutlinedInput label="Tag" />}
-          renderValue={(selected) => selected.join(', ')}
-          MenuProps={MenuProps}
-        >
-          {names.map((name) => (
-            <MenuItem key={name} value={name}>
-              <Checkbox checked={personName.indexOf(name) > -1} />
-              <ListItemText primary={name} />
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+                                  <FormControl fullWidth>
+                                    <InputLabel id="demo-multiple-checkbox-label">Assign To</InputLabel>
+                                    <Select
+                                      labelId="demo-multiple-checkbox-label"
+                                      id="demo-multiple-checkbox"
+                                      multiple
+                                      value={personName}
+                                      onChange={handleChange}
+                                      input={<OutlinedInput label="Tag" />}
+                                      renderValue={(selected) => selected.join(', ')}
+                                      MenuProps={MenuProps}
+                                    >
+                                      {names.map((name) => (
+                                        <MenuItem key={name} value={name}>
+                                          <Checkbox checked={personName.indexOf(name) > -1} />
+                                          <ListItemText primary={name} />
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
                                 </Grid>
                                 <Grid item xs={12}>
                                   <Button

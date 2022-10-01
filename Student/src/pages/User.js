@@ -97,6 +97,7 @@ export default function User() {
   const [answerEvaluation, setAnswerEvaluation] = useState({
     teacher: '',
   });
+  const [results, setResults] = useState([]);
 
   const handleAnswerFile = (e) => {
     setAnswerFile(e.target.files[0], '$$$$');
@@ -111,10 +112,19 @@ export default function User() {
       setTeacher(data.data);
       console.log(data.data);
     };
+
+    const getResults = async () => {
+      const { data } = await axios.get('http://localhost:8000/student/getResults/2');
+      setResults(data.data);
+      console.log(data.data);
+    };
+
     getCustomerInfoData();
+    getResults();
   }, []);
 
   console.log(teacher);
+  console.log(results);
 
   const [page, setPage] = useState(0);
 
@@ -322,8 +332,8 @@ export default function User() {
                     onSelectAllClick={handleSelectAllClick}
                   />
                   <TableBody>
-                    {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                      const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                    {results.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                      const { id, name, createdAt, comment, resultFile } = row;
                       const isItemSelected = selected.indexOf(name) !== -1;
 
                       return (
@@ -346,8 +356,8 @@ export default function User() {
                             </Typography>
                           </Stack>
                         </TableCell> */}
-                          <TableCell align="left">{company}</TableCell>
-                          <TableCell align="left">{role}</TableCell>
+                          <TableCell align="left">{id}</TableCell>
+                          <TableCell align="left">{createdAt.slice(0, 10)}</TableCell>
                           {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell> */}
                           {/* <TableCell align="left">
                           <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>
@@ -386,14 +396,12 @@ export default function User() {
                               <Box sx={style}>
                                 <Grid container spacing={3}>
                                   <Grid item xs={12}>
-                                    <Typography variant="h6">Evaluated Copy:</Typography>
+                                    <Typography variant="h6">Evaluated Copy: </Typography>
+                                    <Typography variant="body1">{resultFile}</Typography>
                                   </Grid>
                                   <Grid item xs={12}>
-                                    <Typography variant="h6">Comment:</Typography>
-                                    <Typography variant="body1">
-                                      Improper waste management in India has numerous implications on the environment
-                                      and health.
-                                    </Typography>
+                                    <Typography variant="h6">Comment: </Typography>
+                                    <Typography variant="body1">{comment}</Typography>
                                   </Grid>
                                 </Grid>
                               </Box>
