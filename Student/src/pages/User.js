@@ -206,6 +206,7 @@ export default function User() {
       formData.append('answerFile', answerFile);
       formData.append('teacherId', answerEvaluation.teacher);
       formData.append('studentId', 2);
+      formData.append('studentName', 'Student2');
 
       console.log(formData);
       await axios
