@@ -131,18 +131,18 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function User() {
-  const [students, setStudents] = useState([]);
+  const [answerEvaluations, setAnswerEvaluations] = useState([]);
 
   useEffect(() => {
     const getCustomerInfoData = async () => {
-      const { data } = await axios.get('http://localhost:8000/student/getStudents');
-      setStudents(data.data);
-      console.log(data.data);
+      const { data, studentId } = await axios.get(`http://localhost:8000/teacher/getAnswerEvaluations/3`);
+
+      setAnswerEvaluations(data.data);
     };
     getCustomerInfoData();
   }, []);
 
-  console.log(students);
+  console.log(answerEvaluations);
 
   const [personName, setPersonName] = React.useState([]);
 
@@ -252,8 +252,8 @@ export default function User() {
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
-                  {students.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, batch, createdAt } = row;
+                  {answerEvaluations.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                    const { id, name, studentName, createdAt } = row;
                     const isItemSelected = selected.indexOf(name) !== -1;
 
                     return (
@@ -277,7 +277,7 @@ export default function User() {
                           </Stack>
                         </TableCell> */}
                         <TableCell align="left">{id}</TableCell>
-                        <TableCell align="left">{name}</TableCell>
+                        <TableCell align="left">{studentName}</TableCell>
                         <TableCell align="left">{createdAt}</TableCell>
                         <TableCell align="left">
                           <Button variant="contained" onClick={handleOpen}>

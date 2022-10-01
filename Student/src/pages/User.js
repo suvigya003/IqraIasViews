@@ -99,7 +99,7 @@ export default function User() {
   });
 
   const handleAnswerFile = (e) => {
-    setAnswerFile(e.target.value);
+    setAnswerFile(e.target.files[0], '$$$$');
     console.log(answerFile);
   };
 
@@ -201,20 +201,23 @@ export default function User() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // console.log('checking');
       const formData = new FormData();
       formData.append('answerFile', answerFile);
+      formData.append('teacherId', answerEvaluation.teacher);
+      formData.append('studentId', 2);
+      formData.append('studentName', 'Student2');
 
-      console.log(customerInfo);
+      console.log(formData);
       await axios
-        .post(`http://localhost:8000/student/addAnswerEvaluation/${answerEvaluation.teacher}`, formData, {
-          'content-type': 'multipart/form-data',
-        })
+        .post(`http://localhost:8000/student/addAnswerEvaluation/${answerEvaluation.teacher}`, formData)
         .then((res) => {
           console.log(res);
         })
         .catch((err) => {
           console.log(err);
         });
+
       setAnswerEvaluation({
         teacher: '',
       });
@@ -279,7 +282,7 @@ export default function User() {
                   <Button
                     className="file-input"
                     value={answerFile}
-                    onChange={handleAnswerFile}
+                    onChange={(e) => handleAnswerFile(e)}
                     variant="outlined"
                     component="label"
                     sx={{ width: '100%', ml: { md: 1 }, mt: { xs: 2, md: 0 }, height: '50px' }}
@@ -294,7 +297,9 @@ export default function User() {
                 </Grid>
               </Grid>
               <Box mt={3}>
-                <Button variant="contained">Send</Button>
+                <Button type="submit" variant="contained">
+                  Send
+                </Button>
               </Box>
             </Box>
           </Card>
