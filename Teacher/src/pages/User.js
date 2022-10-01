@@ -27,6 +27,8 @@ import {
 } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import Modal from '@mui/material/Modal';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import ListItemText from '@mui/material/ListItemText';
 // import Checkbox from '@mui/joy/Checkbox';
 // import List from '@mui/joy/List';
 import ListItem from '@mui/material/ListItem';
@@ -62,7 +64,42 @@ const style = {
   p: 4,
   borderRadius: '8px',
 };
+const style1 = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '60%',
+  bgcolor: 'background.paper',
+  // border: '2px solid #000',
+  // boxShadow: 10,
+  p: 4,
+  borderRadius: '8px',
+};
 // ----------------------------------------------------------------------
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+
+const names = [
+  'Oliver Hansen',
+  'Van Henry',
+  'April Tucker',
+  'Ralph Hubbard',
+  'Omar Alexander',
+  'Carlos Abbott',
+  'Miriam Wagner',
+  'Bradley Wilkerson',
+  'Virginia Andrews',
+  'Kelly Snyder',
+];
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -106,6 +143,19 @@ export default function User() {
   }, []);
 
   console.log(students);
+
+  const [personName, setPersonName] = React.useState([]);
+
+  const handleChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setPersonName(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
+
 
   const [page, setPage] = useState(0);
 
@@ -242,12 +292,16 @@ export default function User() {
                             <Box sx={style}>
                               <Grid container spacing={3}>
                                 <Grid item xs={12}>
-                                  <Typography variant="h6">Copy:</Typography>
+                                <Button
+                                    variant="outlined"
+                                    component="label"
+                                    sx={{ width: '100%', ml: { md: 1 }, mt: { xs: 2, md: 0 }, height: '50px' }}
+                                  >
+                                    Download Copy 
+                                    <input hidden accept="image/*" type="file" />
+                                  </Button>
                                 </Grid>
-                                <Grid item xs={12} md={4}>
-                                  <Typography variant="h6">Upload Evaluated Copy:</Typography>
-                                </Grid>
-                                <Grid item xs={12} md={8}>
+                                <Grid item xs={6}>
                                   <Button
                                     variant="outlined"
                                     component="label"
@@ -291,30 +345,29 @@ export default function User() {
                             aria-labelledby="modal-modal-title"
                             aria-describedby="modal-modal-description"
                           >
-                            <Box sx={style}>
+                            <Box sx={style1}>
                               <Grid container spacing={3}>
                                 <Grid item xs={12}>
-                                  <FormControl fullWidth sx={{ mr: { md: 1 } }}>
-                                    <InputLabel id="demo-simple-select-label">Assign To</InputLabel>
-                                    <Select
-                                      labelId="demo-simple-select-label"
-                                      id="demo-simple-select"
-                                      // value={sList.serviceType}
-                                      label="Assign To"
-                                      // onChange={handleServiceChange}
-                                    >
-                                      <MenuItem value={'Site Survey'}>
-                                        <ListItem>
-                                          <Checkbox label="Lettuce" defaultChecked />
-                                        </ListItem>
-                                      </MenuItem>
-                                      <MenuItem value={'Kitchen Installation'}>
-                                        <Checkbox label="Lettuce" defaultChecked />
-                                      </MenuItem>
-                                      <MenuItem value={'Wardrobe Installation'}>Wardrobe Installation</MenuItem>
-                                      <MenuItem value={'Product Service'}>Product Service</MenuItem>
-                                    </Select>
-                                  </FormControl>
+                                <FormControl fullWidth>
+        <InputLabel id="demo-multiple-checkbox-label">Assign To</InputLabel>
+        <Select
+          labelId="demo-multiple-checkbox-label"
+          id="demo-multiple-checkbox"
+          multiple
+          value={personName}
+          onChange={handleChange}
+          input={<OutlinedInput label="Tag" />}
+          renderValue={(selected) => selected.join(', ')}
+          MenuProps={MenuProps}
+        >
+          {names.map((name) => (
+            <MenuItem key={name} value={name}>
+              <Checkbox checked={personName.indexOf(name) > -1} />
+              <ListItemText primary={name} />
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
                                 </Grid>
                                 <Grid item xs={12}>
                                   <Button
